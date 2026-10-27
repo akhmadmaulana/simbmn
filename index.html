@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIM-BMN Sekolah | Sistem Manajemen Sarana & Prasarana</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- SheetJS untuk Export/Import Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Google Fonts: Poppins (Heading) & Inter (Data) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNJTS1CTU4gU2Vrb2xhaCIsCiAgInNob3J0X25hbWUiOiAiQk1OIFNla29sYWgiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI0UwRjJGRSIsCiAgInRoZW1lX2NvbG9yIjogIiM4QjVDRjYiCn0=">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif'],
+          },
+          animation: {
+            blob: "blob 7s infinite",
+          },
+          keyframes: {
+            blob: {
+              "0%": { transform: "translate(0px, 0px) scale(1)" },
+              "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+              "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+              "100%": { transform: "translate(0px, 0px) scale(1)" }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #E0F2FE; color: #1E1B4B; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; }
+    
+    /* Soft Neumorphism / Glassmorphism Cards */
+    .glass-card { 
+      background: rgba(255, 255, 255, 0.85); 
+      backdrop-filter: blur(16px); 
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5); 
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+    
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
+
+    /* Print Styles */
+    @media print {
+      @page { margin: 1.5cm; size: A4 portrait; }
+      body { background: white !important; font-family: 'Times New Roman', Times, serif !important; color: black !important;}
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .glass-card { border: none !important; box-shadow: none !important; background: white !important; filter: none !important; }
+      .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
+      .print-table th { background-color: #f0f0f0 !important; font-weight: bold; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .text-center { text-align: center; }
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col md:flex-row antialiased relative">
+
+  <!-- Fluid Background Blobs -->
+  <div class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0 no-print">
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
+    <div class="absolute top-[20%] right-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+    <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000"></div>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xl transition-opacity duration-500">
+    <div class="glass-card rounded-3xl w-full max-w-md p-8 relative overflow-hidden shadow-2xl">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/30 mx-auto mb-4">
+          <i data-lucide="school" class="w-8 h-8 text-white"></i>
+        </div>
+        <h2 class="text-2xl font-display font-bold text-indigo-950">SIM BMN Sekolah</h2>
+        <p class="text-sm text-slate-500 mt-1">Silakan masuk untuk melanjutkan</p>
+      </div>
+      <form onsubmit="handleLogin(event)" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Email Pengguna</label>
+          <input type="email" id="login-email" required placeholder="admin@sekolah.sch.id" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Kata Sandi</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+        </div>
+        <button type="submit" id="btn-login" class="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center">
+          <span>Masuk ke Sistem</span>
+        </button>
+      </form>
+      <div id="login-demo-hint" class="hidden mt-6 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 text-center">
+        <strong>Mode Preview Aktif</strong><br>Gunakan sembarang email & sandi untuk masuk.
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR (DESKTOP) -->
+  <aside id="desktop-sidebar" class="hidden md:flex flex-col w-72 glass-card border-r border-white/60 z-30 flex-shrink-0 m-4 rounded-3xl no-print shadow-xl">
+    <div class="p-6 border-b border-slate-100/50 flex items-center space-x-3">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+        <i data-lucide="school" class="w-6 h-6 text-white"></i>
+      </div>
+      <div>
+        <h1 class="font-display font-bold text-lg tracking-tight leading-tight text-indigo-950">SIM BMN</h1>
+        <p class="text-xs text-slate-500 font-medium">Tata Usaha Sekolah</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-semibold transition bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md hover:shadow-lg">
+        <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i> Dashboard
+      </button>
+
+      <button onclick="switchTab('induk')" id="nav-induk" class="nav-btn w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-semibold transition text-slate-600 hover:bg-white/60 hover:text-indigo-900">
+        <i data-lucide="book-open" class="w-5 h-5 mr-3 text-purple-500"></i> Buku Induk BMN
+      </button>
+
+      <button onclick="switchTab('ruangan')" id="nav-ruangan" class="nav-btn w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-semibold transition text-slate-600 hover:bg-white/60 hover:text-indigo-900">
+        <i data-lucide="door-open" class="w-5 h-5 mr-3 text-blue-500"></i> Barang Ruangan
+      </button>
+
+      <button onclick="switchTab('pinjam')" id="nav-pinjam" class="nav-btn w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-semibold transition text-slate-600 hover:bg-white/60 hover:text-indigo-900">
+        <i data-lucide="handshake" class="w-5 h-5 mr-3 text-pink-500"></i> Peminjaman
+      </button>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 flex flex-col h-full w-full z-10 overflow-hidden relative">
+    
+    <!-- TOP HEADER -->
+    <header class="h-20 px-6 md:px-8 flex items-center justify-between no-print">
+      <div class="flex items-center">
+        <!-- Mobile Logo -->
+        <div class="md:hidden flex items-center space-x-2 mr-4">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center">
+            <i data-lucide="school" class="w-5 h-5 text-white"></i>
+          </div>
+          <h1 class="font-display font-bold text-lg text-indigo-950">SIM BMN</h1>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <div id="preview-mode-badge" class="hidden md:flex items-center px-4 py-1.5 bg-yellow-100/80 backdrop-blur text-yellow-800 border border-yellow-200 rounded-full text-xs font-semibold shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse"></span> Mode Preview (In-Memory)
+        </div>
+        
+        <button onclick="handleLogout()" class="px-4 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:shadow-sm rounded-full text-xs font-bold transition flex items-center border border-rose-100">
+          <i data-lucide="log-out" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Keluar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- TAB CONTENTS -->
+    <div id="content-container" class="flex-1 overflow-y-auto px-4 md:px-8 pb-24 md:pb-8 custom-scrollbar">
+      
+      <!-- TAB 1: DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content space-y-6">
+        <div class="glass-card rounded-3xl p-8 relative overflow-hidden group">
+          <div class="relative z-10">
+            <h2 class="text-3xl font-display font-bold text-indigo-950">Selamat Datang di SIM BMN!</h2>
+            <p class="text-slate-600 mt-2 max-w-xl text-sm leading-relaxed">Sistem Informasi Manajemen Barang Milik Negara & Persediaan Sekolah. Dilengkapi fitur upload dokumen BAST dan cetak laporan yang dapat dikostumisasi secara dinamis.</p>
+          </div>
+          <div class="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition duration-500 pointer-events-none">
+            <i data-lucide="layout-template" class="w-64 h-64 text-purple-600"></i>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600"><i data-lucide="book-open" class="w-7 h-7"></i></div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Aset Induk</p>
+              <h3 id="stat-induk" class="text-2xl font-display font-bold text-indigo-950">0</h3>
+            </div>
+          </div>
+          <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600"><i data-lucide="door-open" class="w-7 h-7"></i></div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aset di Ruangan</p>
+              <h3 id="stat-ruangan" class="text-2xl font-display font-bold text-indigo-950">0</h3>
+            </div>
+          </div>
+          <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl bg-pink-100 flex items-center justify-center text-pink-600"><i data-lucide="handshake" class="w-7 h-7"></i></div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Peminjaman Aktif</p>
+              <h3 id="stat-pinjam" class="text-2xl font-display font-bold text-indigo-950">0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: BUKU INDUK INVENTARIS -->
+      <div id="tab-induk" class="tab-content hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h2 class="text-2xl font-display font-bold text-indigo-950">Buku Induk Inventaris</h2>
+          <div class="flex items-center flex-wrap justify-end gap-2">
+            <input type="file" id="import-induk" accept=".xlsx, .xls" class="hidden" onchange="processImport(event, 'induk')">
+            <button onclick="document.getElementById('import-induk').click()" class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-emerald-200" title="Import dari Excel">
+              <i data-lucide="upload" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Import</span>
+            </button>
+            <button onclick="exportExcel('induk')" class="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-blue-200" title="Export ke Excel">
+              <i data-lucide="download" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Export</span>
+            </button>
+            <button onclick="openPrintModal('induk')" class="px-4 py-2.5 bg-white/70 hover:bg-white text-indigo-900 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-white">
+              <i data-lucide="printer" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Cetak</span>
+            </button>
+            <button onclick="openIndukModal()" class="px-4 py-2.5 bg-gradient-to-r from-purple-500 to-blue-500 hover:shadow-lg hover:-translate-y-0.5 text-white text-sm font-bold rounded-full shadow-md transition flex items-center">
+              <i data-lucide="plus" class="w-4 h-4 md:mr-1"></i> <span class="hidden md:inline">Tambah</span> BMN
+            </button>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-3xl overflow-hidden">
+          <div class="overflow-x-auto custom-scrollbar p-2">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="text-indigo-950 font-semibold border-b border-slate-200/50">
+                <tr class="whitespace-nowrap">
+                  <th class="p-4">No</th>
+                  <th class="p-4">Kode Barang</th>
+                  <th class="p-4">N.U.P</th>
+                  <th class="p-4">Uraian Barang/ Merk Barang</th>
+                  <th class="p-4 text-center">Jumlah</th>
+                  <th class="p-4 text-center">Tahun</th>
+                  <th class="p-4">Asal Barang</th>
+                  <th class="p-4">Tgl. Perolehan</th>
+                  <th class="p-4">Keadaan Barang</th>
+                  <th class="p-4">Lokasi</th>
+                  <th class="p-4 text-center">Dok. BAST</th>
+                  <th class="p-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-induk-body" class="divide-y divide-slate-100/50">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: BARANG RUANGAN -->
+      <div id="tab-ruangan" class="tab-content hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h2 class="text-2xl font-display font-bold text-indigo-950">Daftar Barang Ruangan</h2>
+          <div class="flex items-center flex-wrap justify-end gap-2">
+            <input type="file" id="import-ruangan" accept=".xlsx, .xls" class="hidden" onchange="processImport(event, 'ruangan')">
+            <button onclick="document.getElementById('import-ruangan').click()" class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-emerald-200" title="Import dari Excel">
+              <i data-lucide="upload" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Import</span>
+            </button>
+            <button onclick="exportExcel('ruangan')" class="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-blue-200" title="Export ke Excel">
+              <i data-lucide="download" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Export</span>
+            </button>
+            <button onclick="openPrintModal('ruangan')" class="px-4 py-2.5 bg-white/70 hover:bg-white text-indigo-900 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-white">
+              <i data-lucide="printer" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Cetak</span>
+            </button>
+            <button onclick="openRuanganModal()" class="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 hover:shadow-lg hover:-translate-y-0.5 text-white text-sm font-bold rounded-full shadow-md transition flex items-center">
+              <i data-lucide="plus" class="w-4 h-4 md:mr-1"></i> Input Ruangan
+            </button>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-3xl overflow-hidden">
+          <div class="overflow-x-auto custom-scrollbar p-2">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="text-indigo-950 font-semibold border-b border-slate-200/50">
+                <tr>
+                  <th class="p-4">No</th>
+                  <th class="p-4">Nama Barang</th>
+                  <th class="p-4">Kondisi</th>
+                  <th class="p-4 text-center">Jumlah</th>
+                  <th class="p-4">Tahun / Perolehan</th>
+                  <th class="p-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-ruangan-body" class="divide-y divide-slate-100/50">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: PEMINJAMAN BARANG -->
+      <div id="tab-pinjam" class="tab-content hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-display font-bold text-indigo-950">Log Peminjaman Barang</h2>
+            <p class="text-sm text-slate-500">Pencatatan sirkulasi barang keluar & masuk.</p>
+          </div>
+          <div class="flex items-center flex-wrap justify-end gap-2">
+             <input type="file" id="import-pinjam" accept=".xlsx, .xls" class="hidden" onchange="processImport(event, 'pinjam')">
+             <button onclick="document.getElementById('import-pinjam').click()" class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-emerald-200" title="Import dari Excel">
+              <i data-lucide="upload" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Import</span>
+            </button>
+            <button onclick="exportExcel('pinjam')" class="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-blue-200" title="Export ke Excel">
+              <i data-lucide="download" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Export</span>
+            </button>
+             <button onclick="openPrintModal('pinjam')" class="px-4 py-2.5 bg-white/70 hover:bg-white text-indigo-900 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-white">
+              <i data-lucide="printer" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Cetak Log</span>
+            </button>
+            <button onclick="openPinjamModal()" class="px-4 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-lg hover:-translate-y-0.5 text-white text-sm font-bold rounded-full shadow-md transition flex items-center">
+              <i data-lucide="plus" class="w-4 h-4 md:mr-1"></i> Catat Pinjam
+            </button>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-3xl overflow-hidden">
+          <div class="overflow-x-auto custom-scrollbar p-2">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="text-indigo-950 font-semibold border-b border-slate-200/50">
+                <tr>
+                  <th class="p-4">No</th>
+                  <th class="p-4">Barang & Keperluan</th>
+                  <th class="p-4">Tgl Pinjam - Kembali</th>
+                  <th class="p-4">Peminjam / PJ</th>
+                  <th class="p-4 text-center">Status</th>
+                  <th class="p-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-pinjam-body" class="divide-y divide-slate-100/50">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- BOTTOM NAVIGATION (MOBILE) -->
+  <nav class="md:hidden fixed bottom-4 left-4 right-4 glass-card rounded-full flex items-center justify-around py-3 px-2 z-40 shadow-2xl border border-white no-print">
+    <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="flex flex-col items-center p-2 text-purple-600">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[9px] font-bold mt-1">Dashboard</span>
+    </button>
+    <button onclick="switchTab('induk')" id="mob-nav-induk" class="flex flex-col items-center p-2 text-slate-400">
+      <i data-lucide="book-open" class="w-5 h-5"></i>
+      <span class="text-[9px] font-bold mt-1">Induk</span>
+    </button>
+    <button onclick="switchTab('ruangan')" id="mob-nav-ruangan" class="flex flex-col items-center p-2 text-slate-400">
+      <i data-lucide="door-open" class="w-5 h-5"></i>
+      <span class="text-[9px] font-bold mt-1">Ruangan</span>
+    </button>
+    <button onclick="switchTab('pinjam')" id="mob-nav-pinjam" class="flex flex-col items-center p-2 text-slate-400">
+      <i data-lucide="handshake" class="w-5 h-5"></i>
+      <span class="text-[9px] font-bold mt-1">Pinjam</span>
+    </button>
+  </nav>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. MODAL BUKU INDUK (Dengan Fitur Upload BAST Hybrid) -->
+  <div id="modal-induk" class="fixed inset-0 bg-indigo-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print transition-opacity">
+    <div class="glass-card rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <button onclick="closeIndukModal()" class="absolute right-5 top-5 text-slate-400 hover:text-indigo-900 bg-white/50 rounded-full p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-xl font-display font-bold text-indigo-950 mb-5 flex items-center"><i data-lucide="book-open" class="w-5 h-5 mr-2 text-purple-500"></i> Form Buku Induk BMN</h3>
+      
+      <form onsubmit="saveInduk(event)" class="space-y-4">
+        <input type="hidden" id="induk-id">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kode Barang</label>
+            <input type="text" id="induk-kode" required placeholder="Contoh: 1.3.2.04" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">N.U.P</label>
+            <input type="text" id="induk-nup" required placeholder="0001" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Uraian Barang / Merk Barang</label>
+          <input type="text" id="induk-uraian" required placeholder="Laptop Core i5 ASUS Vivobook" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah</label>
+            <input type="number" id="induk-jumlah" required value="1" min="1" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun (Perolehan)</label>
+            <input type="number" id="induk-tahun" required placeholder="2024" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Asal Barang</label>
+            <input type="text" id="induk-asal" required placeholder="BOS Reguler" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tgl. Perolehan</label>
+            <input type="date" id="induk-tgl" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Keadaan Barang</label>
+            <select id="induk-keadaan" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+              <option value="Baik">Baik</option>
+              <option value="Rusak Ringan">Rusak Ringan</option>
+              <option value="Rusak Berat">Rusak Berat</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Lokasi</label>
+            <input type="text" id="induk-lokasi" placeholder="Ruang Guru / Kelas X-A" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+          </div>
+        </div>
+        
+        <!-- BAST HYBRID UPLOAD/LINK SECTION -->
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+          <label class="block text-xs font-bold text-slate-700 mb-2">Dokumen BAST (Berita Acara Serah Terima)</label>
+          <div class="flex items-center space-x-4 mb-3">
+            <label class="flex items-center text-xs font-semibold cursor-pointer text-indigo-900">
+              <input type="radio" name="bast-type" value="link" checked class="mr-1.5 accent-purple-600" onchange="toggleBastInput()"> Tautkan URL / Link
+            </label>
+            <label class="flex items-center text-xs font-semibold cursor-pointer text-indigo-900">
+              <input type="radio" name="bast-type" value="file" class="mr-1.5 accent-purple-600" onchange="toggleBastInput()"> Upload File Langsung
+            </label>
+          </div>
+          
+          <div id="bast-link-container">
+            <input type="url" id="induk-bast-link" placeholder="https://drive.google.com/..." class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+            <p class="text-[10px] text-slate-500 mt-1">Masukkan link Google Drive atau Cloud Storage lainnya.</p>
+          </div>
+          
+          <div id="bast-file-container" class="hidden">
+            <input type="file" id="induk-bast-file" accept=".pdf,image/png,image/jpeg" class="w-full px-4 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer">
+            <p class="text-[10px] text-pink-600 font-semibold mt-1">*Maksimal ukuran file: 2 MB (Format PDF/JPG/PNG).</p>
+          </div>
+          <input type="hidden" id="induk-bast-existing"> <!-- Menyimpan URL lama jika ada -->
+        </div>
+
+        <div class="pt-4 text-right">
+          <button type="submit" id="btn-save-induk" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-full shadow-md hover:shadow-lg transition flex items-center justify-center ml-auto">
+            <span>Simpan Data</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MODAL BARANG RUANGAN -->
+  <div id="modal-ruangan" class="fixed inset-0 bg-indigo-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print transition-opacity">
+    <div class="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeRuanganModal()" class="absolute right-5 top-5 text-slate-400 hover:text-indigo-900 bg-white/50 rounded-full p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-xl font-display font-bold text-indigo-950 mb-5 flex items-center"><i data-lucide="door-open" class="w-5 h-5 mr-2 text-blue-500"></i> Form Barang Ruangan</h3>
+      
+      <form onsubmit="saveRuangan(event)" class="space-y-4">
+        <input type="hidden" id="ruang-id">
+        <!-- Input Nama Ruangan (Group by Ruangan is standard) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih / Ketik Lokasi Ruangan</label>
+          <input type="text" id="ruang-lokasi" required placeholder="Contoh: Kelas VIII A" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+        </div>
+        <div class="border-t border-slate-100 pt-3">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Barang</label>
+          <input type="text" id="ruang-nama" required placeholder="Meja Siswa Kayu" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah (Unit)</label>
+            <input type="number" id="ruang-jumlah" required min="1" value="1" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kondisi</label>
+            <select id="ruang-kondisi" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+              <option value="Baik">Baik</option>
+              <option value="Rusak">Rusak</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Asal Perolehan</label>
+            <input type="text" id="ruang-perolehan" placeholder="BOS/Komite" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun</label>
+            <input type="number" id="ruang-tahun" value="2024" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <div class="pt-4 text-right">
+          <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-full shadow-md transition">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. MODAL PEMINJAMAN -->
+  <div id="modal-pinjam" class="fixed inset-0 bg-indigo-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print transition-opacity">
+    <div class="glass-card rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button onclick="closePinjamModal()" class="absolute right-5 top-5 text-slate-400 hover:text-indigo-900 bg-white/50 rounded-full p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-xl font-display font-bold text-indigo-950 mb-5 flex items-center"><i data-lucide="handshake" class="w-5 h-5 mr-2 text-pink-500"></i> Log Peminjaman</h3>
+      
+      <form onsubmit="savePinjam(event)" class="space-y-4">
+        <input type="hidden" id="pinjam-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Barang yang Dipinjam</label>
+          <input type="text" id="pinjam-nama" required placeholder="Proyektor LCD Epson" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Keperluan / Kegiatan</label>
+          <input type="text" id="pinjam-keperluan" required placeholder="Rapat Orang Tua Murid" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Pinjam</label>
+            <input type="date" id="pinjam-tgl-mulai" required class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Kembali</label>
+            <input type="date" id="pinjam-tgl-selesai" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Peminjam / PJ</label>
+            <input type="text" id="pinjam-pj" required placeholder="Bpk. Andi" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Status Peminjaman</label>
+            <select id="pinjam-status" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold outline-none text-pink-600">
+              <option value="Dipinjam">Aktif Dipinjam</option>
+              <option value="Dikembalikan" class="text-emerald-600">Dikembalikan</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tanda Tangan (Teks Digital)</label>
+          <input type="text" id="pinjam-ttd" placeholder="Ketik nama sebagai TTD" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm italic outline-none">
+        </div>
+        <div class="pt-4 text-right">
+          <button type="submit" class="px-6 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-full shadow-md transition">Simpan Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. MODAL PRINT SETTINGS (KOSTUMISASI CETAK Laporan) -->
+  <div id="modal-print" class="fixed inset-0 bg-indigo-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print transition-opacity">
+    <div class="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closePrintModal()" class="absolute right-5 top-5 text-slate-400 hover:text-indigo-900 bg-white/50 rounded-full p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-xl font-display font-bold text-indigo-950 mb-4 flex items-center"><i data-lucide="settings-2" class="w-5 h-5 mr-2 text-indigo-500"></i> Pengaturan Cetak</h3>
+      <p class="text-xs text-slate-500 mb-4 border-b border-slate-200 pb-3">Sesuaikan judul laporan dan detail penandatangan sebelum dokumen di-print.</p>
+      
+      <form onsubmit="executePrint(event)" class="space-y-4">
+        <input type="hidden" id="print-type">
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Laporan</label>
+          <input type="text" id="print-custom-title" required class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Cetak</label>
+          <input type="date" id="print-custom-date" required class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none">
+        </div>
+        
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+          <p class="text-xs font-bold text-slate-700">Detail Penandatangan (Bawah Laporan)</p>
+          <div>
+            <label class="block text-[11px] text-slate-500 mb-1">Jabatan / Keterangan TTD</label>
+            <input type="text" id="print-sign-role" value="Mengetahui, Kepala Tata Usaha" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 mb-1">Nama Terang</label>
+            <input type="text" id="print-sign-name" placeholder="(Kosongkan jika ingin tanda titik-titik)" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 mb-1">NIP</label>
+            <input type="text" id="print-sign-nip" placeholder="(Opsional)" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm outline-none">
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full px-6 py-3 bg-indigo-900 text-white font-bold rounded-xl shadow-md transition hover:bg-indigo-800 flex justify-center items-center">
+            <i data-lucide="printer" class="w-4 h-4 mr-2"></i> Cetak Laporan Sekarang
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PRINT CONTAINER (Hidden in Browser, Visible in Print) -->
+  <div id="print-container" class="hidden print-only p-2">
+    <div class="text-center mb-6">
+      <h1 class="text-lg font-bold uppercase">SISTEM INFORMASI MANAJEMEN BARANG MILIK NEGARA</h1>
+      <h2 id="print-title" class="text-xl font-bold uppercase mt-1">DAFTAR INVENTARIS</h2>
+      <p class="text-sm mt-1">Dicetak pada: <span id="print-date"></span></p>
+    </div>
+    
+    <div id="print-content"></div>
+    
+    <div class="mt-12 flex justify-end">
+      <div class="text-center min-w-[250px]">
+        <p class="mb-20" id="print-ttd-role">Mengetahui,<br>Kepala Tata Usaha</p>
+        <p class="font-bold underline" id="print-ttd-name">...................................</p>
+        <p id="print-ttd-nip">NIP. ..........................</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none flex flex-col items-end"></div>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script type="module">
+    // ------------------------------------------------------------------------
+    // KONFIGURASI APLIKASI
+    // ------------------------------------------------------------------------
+    const IS_PREVIEW = false; // Set FALSE untuk Firebase Storage & Firestore sesungguhnya
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtSuvxIScxnPoQMYpalnB1ItwiCxUDdk0",
+  authDomain: "e-sarpras-srmp-20-bjb.firebaseapp.com",
+  projectId: "e-sarpras-srmp-20-bjb",
+  storageBucket: "e-sarpras-srmp-20-bjb.firebasestorage.app",
+  messagingSenderId: "521838617792",
+  appId: "1:521838617792:web:50558000b60cbb21823925"
+};
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+    let app, db, storage, auth;
+    const APP_ID_PATH = 'sim-bmn-sekolah';
+
+    // Data In-Memory Dummy
+    let dataInduk = IS_PREVIEW ? [{ id: "IDK-1", kode: "1.3.2.04", nup: "0001", uraian: "Laptop Core i5 ASUS Vivobook", jumlah: 1, tahun: 2024, asal: "BOS Reguler", tgl: "2024-01-15", keadaan: "Baik", lokasi: "Ruang Guru", bast: "" }] : [];
+    let dataRuangan = IS_PREVIEW ? [{ id: "RNG-1", nama: "Meja Siswa Kayu", lokasi: "Kelas X-A", jumlah: 36, kondisi: "Baik", perolehan: "Dana Komite", tahun: "2023" }] : [];
+    let dataPinjam = IS_PREVIEW ? [{ id: "PNJ-1", nama: "Proyektor LCD Epson", keperluan: "Ekskul", tglMulai: "2026-10-27", tglSelesai: "2026-10-28", pj: "Bpk. Rahmat", status: "Dipinjam", ttd: "Rahmat" }] : [];
+
+    window.addEventListener('load', async () => {
+      if (window.lucide) window.lucide.createIcons();
+      if (IS_PREVIEW) {
+        document.getElementById('preview-mode-badge').classList.remove('hidden');
+        document.getElementById('login-demo-hint').classList.remove('hidden');
+        // Tidak memuat data hingga login sukses
+      } else {
+        try {
+          app = initializeApp(firebaseConfig);
+          db = getFirestore(app);
+          storage = getStorage(app);
+          auth = getAuth(app);
+          
+          // Mengecek status autentikasi dari Firebase
+          onAuthStateChanged(auth, (user) => {
+            if (user) {
+              completeLogin();
+            } else {
+              document.getElementById('login-screen').classList.remove('hidden');
+            }
+          });
+        } catch (err) { console.error(err); showToast("Koneksi Firebase Gagal.", "error"); }
+      }
+    });
+
+    // Proses Submit Formulir Login
+    window.handleLogin = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login');
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Memproses...`;
+      btn.disabled = true;
+
+      try {
+        if (IS_PREVIEW) {
+          setTimeout(() => { completeLogin(); }, 800); // Simulasi proses loading sebentar
+        } else {
+          await signInWithEmailAndPassword(auth, email, pass);
+          // onAuthStateChanged otomatis memanggil completeLogin() jika sukses
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Login gagal! Periksa email dan password Anda.", "error");
+        btn.innerHTML = `<span>Masuk ke Sistem</span>`;
+        btn.disabled = false;
+      }
+    }
+
+    // Fungsi Lanjutan Ketika Login Berhasil
+    function completeLogin() {
+       document.getElementById('login-screen').classList.add('hidden');
+       if (IS_PREVIEW) renderAll();
+       else setupRealtimeListeners();
+       switchTab('dashboard');
+       showToast("Berhasil masuk ke sistem", "success");
+       if(window.lucide) window.lucide.createIcons();
+    }
+
+    // Logika Keluar Aplikasi
+    window.handleLogout = async function() {
+       if (!IS_PREVIEW && auth) {
+         try { await signOut(auth); } catch(err) { console.error(err); }
+       }
+       // Mengembalikan UI ke Status Login
+       document.getElementById('login-screen').classList.remove('hidden');
+       document.getElementById('login-email').value = '';
+       document.getElementById('login-password').value = '';
+       document.getElementById('btn-login').innerHTML = `<span>Masuk ke Sistem</span>`;
+       document.getElementById('btn-login').disabled = false;
+       
+       // Sembunyikan panel konten sementara log out
+       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+       
+       showToast("Anda telah berhasil keluar", "info");
+    }
+
+    function setupRealtimeListeners() {
+      onSnapshot(collection(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_buku_induk'), (snap) => { dataInduk = []; snap.forEach(doc => dataInduk.push({ id: doc.id, ...doc.data() })); renderInduk(); updateDash(); });
+      onSnapshot(collection(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_barang_ruangan'), (snap) => { dataRuangan = []; snap.forEach(doc => dataRuangan.push({ id: doc.id, ...doc.data() })); renderRuangan(); updateDash(); });
+      onSnapshot(collection(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_peminjaman'), (snap) => { dataPinjam = []; snap.forEach(doc => dataPinjam.push({ id: doc.id, ...doc.data() })); renderPinjam(); updateDash(); });
+    }
+
+    // ------------------------------------------------------------------------
+    // UI TABS & DASHBOARD
+    // ------------------------------------------------------------------------
+    window.switchTab = function(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      
+      document.querySelectorAll('#desktop-sidebar .nav-btn').forEach(btn => btn.className = "nav-btn w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-semibold transition text-slate-600 hover:bg-white/60 hover:text-indigo-900");
+      if(document.getElementById(`nav-${tabId}`)) document.getElementById(`nav-${tabId}`).className = "nav-btn w-full flex items-center px-4 py-3.5 rounded-2xl text-sm font-semibold transition bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md hover:shadow-lg";
+      
+      document.querySelectorAll('nav.md\\:hidden button').forEach(btn => { btn.classList.remove('text-purple-600'); btn.classList.add('text-slate-400'); });
+      if(document.getElementById(`mob-nav-${tabId}`)) { document.getElementById(`mob-nav-${tabId}`).classList.remove('text-slate-400'); document.getElementById(`mob-nav-${tabId}`).classList.add('text-purple-600'); }
+      if(window.lucide) window.lucide.createIcons();
+    };
+
+    function renderAll() { updateDash(); renderInduk(); renderRuangan(); renderPinjam(); }
+    function updateDash() {
+      document.getElementById('stat-induk').innerText = dataInduk.length;
+      document.getElementById('stat-ruangan').innerText = dataRuangan.reduce((acc, curr) => acc + Number(curr.jumlah || 0), 0);
+      document.getElementById('stat-pinjam').innerText = dataPinjam.filter(p => p.status === 'Dipinjam').length;
+    }
+
+    // ------------------------------------------------------------------------
+    // BUKU INDUK (DENGAN BAST HYBRID)
+    // ------------------------------------------------------------------------
+    window.toggleBastInput = function() {
+      const type = document.querySelector('input[name="bast-type"]:checked').value;
+      if(type === 'link') {
+        document.getElementById('bast-link-container').classList.remove('hidden');
+        document.getElementById('bast-file-container').classList.add('hidden');
+      } else {
+        document.getElementById('bast-link-container').classList.add('hidden');
+        document.getElementById('bast-file-container').classList.remove('hidden');
+      }
+    }
+
+    function renderInduk() {
+      const tbody = document.getElementById('table-induk-body'); tbody.innerHTML = '';
+      if(dataInduk.length === 0) { tbody.innerHTML = `<tr><td colspan="12" class="p-6 text-center text-slate-400">Belum ada data inventaris.</td></tr>`; return; }
+      dataInduk.forEach((item, index) => {
+        const badgeColor = item.keadaan === 'Baik' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+        const linkHTML = item.bast ? `<a href="${item.bast}" target="_blank" class="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded text-[10px] font-bold inline-flex items-center"><i data-lucide="file-check" class="w-3 h-3 mr-1"></i> BAST</a>` : '-';
+        tbody.innerHTML += `
+          <tr class="hover:bg-white/50 transition whitespace-nowrap">
+            <td class="p-4">${index + 1}</td>
+            <td class="p-4 font-semibold text-indigo-900">${item.kode || '-'}</td>
+            <td class="p-4">${item.nup || '-'}</td>
+            <td class="p-4 font-bold text-slate-800">${item.uraian || '-'}</td>
+            <td class="p-4 text-center font-bold">${item.jumlah || 1}</td>
+            <td class="p-4 text-center">${item.tahun || '-'}</td>
+            <td class="p-4">${item.asal || '-'}</td>
+            <td class="p-4">${item.tgl || '-'}</td>
+            <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeColor}">${item.keadaan || 'Baik'}</span></td>
+            <td class="p-4 text-xs"><i data-lucide="map-pin" class="w-3 h-3 inline text-slate-400"></i> ${item.lokasi || '-'}</td>
+            <td class="p-4 text-center">${linkHTML}</td>
+            <td class="p-4 text-center">
+              <button onclick="editInduk('${item.id}')" class="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 mr-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      if(window.lucide) window.lucide.createIcons();
+    }
+
+    window.openIndukModal = function() {
+      document.getElementById('induk-id').value = '';
+      document.getElementById('induk-kode').value = ''; document.getElementById('induk-nup').value = '';
+      document.getElementById('induk-uraian').value = ''; document.getElementById('induk-jumlah').value = '1';
+      document.getElementById('induk-tahun').value = new Date().getFullYear(); document.getElementById('induk-asal').value = '';
+      document.getElementById('induk-tgl').value = ''; document.getElementById('induk-keadaan').value = 'Baik';
+      document.getElementById('induk-lokasi').value = ''; 
+      
+      document.querySelector('input[name="bast-type"][value="link"]').checked = true;
+      document.getElementById('induk-bast-link').value = '';
+      document.getElementById('induk-bast-file').value = '';
+      document.getElementById('induk-bast-existing').value = '';
+      toggleBastInput();
+
+      document.getElementById('modal-induk').classList.remove('hidden');
+    }
+    window.closeIndukModal = function() { document.getElementById('modal-induk').classList.add('hidden'); }
+    
+    window.editInduk = function(id) {
+      const item = dataInduk.find(i => i.id === id); if(!item) return;
+      document.getElementById('induk-id').value = item.id;
+      document.getElementById('induk-kode').value = item.kode || ''; document.getElementById('induk-nup').value = item.nup || '';
+      document.getElementById('induk-uraian').value = item.uraian || ''; document.getElementById('induk-jumlah').value = item.jumlah || 1;
+      document.getElementById('induk-tahun').value = item.tahun || ''; document.getElementById('induk-asal').value = item.asal || '';
+      document.getElementById('induk-tgl').value = item.tgl || ''; document.getElementById('induk-keadaan').value = item.keadaan || 'Baik';
+      document.getElementById('induk-lokasi').value = item.lokasi || ''; 
+      
+      document.querySelector('input[name="bast-type"][value="link"]').checked = true;
+      document.getElementById('induk-bast-link').value = item.bast || '';
+      document.getElementById('induk-bast-existing').value = item.bast || '';
+      document.getElementById('induk-bast-file').value = '';
+      toggleBastInput();
+
+      document.getElementById('modal-induk').classList.remove('hidden');
+    }
+
+    window.saveInduk = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-save-induk');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i> Memproses...`; 
+      btn.disabled = true;
+      if(window.lucide) window.lucide.createIcons();
+
+      try {
+        let bastUrl = document.getElementById('induk-bast-existing').value;
+        const bastType = document.querySelector('input[name="bast-type"]:checked').value;
+        
+        if (bastType === 'link') {
+            bastUrl = document.getElementById('induk-bast-link').value;
+        } else {
+            const fileInput = document.getElementById('induk-bast-file');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 2 * 1024 * 1024) { // 2MB Limit
+                    showToast("Gagal: Ukuran file BAST melebihi 2MB!", "error");
+                    btn.innerHTML = originalHtml; btn.disabled = false;
+                    return;
+                }
+                if (IS_PREVIEW) {
+                    bastUrl = URL.createObjectURL(file); // Fake URL for Preview
+                } else if (storage) {
+                    const fileRef = ref(storage, `bmn-bast/${Date.now()}_${file.name}`);
+                    await uploadBytes(fileRef, file);
+                    bastUrl = await getDownloadURL(fileRef);
+                }
+            }
+        }
+
+        const id = document.getElementById('induk-id').value || `IDK-${Date.now()}`;
+        const obj = {
+          kode: document.getElementById('induk-kode').value, nup: document.getElementById('induk-nup').value,
+          uraian: document.getElementById('induk-uraian').value, jumlah: Number(document.getElementById('induk-jumlah').value),
+          tahun: document.getElementById('induk-tahun').value, asal: document.getElementById('induk-asal').value,
+          tgl: document.getElementById('induk-tgl').value, keadaan: document.getElementById('induk-keadaan').value,
+          lokasi: document.getElementById('induk-lokasi').value, bast: bastUrl
+        };
+
+        if(IS_PREVIEW) {
+          const idx = dataInduk.findIndex(i => i.id === id);
+          if(idx >= 0) Object.assign(dataInduk[idx], obj); else dataInduk.push({id, ...obj});
+          renderInduk(); updateDash(); showToast("Buku Induk disimpan", "success");
+        } else if(db) {
+          await setDoc(doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_buku_induk', id), obj);
+          showToast("Tersimpan di Cloud", "success");
+        }
+        closeIndukModal();
+      } catch(err) {
+        console.error(err); showToast("Gagal menyimpan data BMN", "error");
+      } finally {
+        btn.innerHTML = originalHtml; btn.disabled = false;
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // BARANG RUANGAN
+    // ------------------------------------------------------------------------
+    function renderRuangan() {
+      const tbody = document.getElementById('table-ruangan-body'); tbody.innerHTML = '';
+      if(dataRuangan.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada barang ruangan.</td></tr>`; return; }
+      dataRuangan.forEach((item, index) => {
+        const badgeColor = item.kondisi === 'Baik' ? 'text-emerald-600' : 'text-rose-600';
+        tbody.innerHTML += `
+          <tr class="hover:bg-white/50 transition">
+            <td class="p-4">${index + 1}</td>
+            <td class="p-4"><p class="font-bold text-indigo-950">${item.nama}</p><p class="text-xs text-blue-600"><i data-lucide="map-pin" class="w-3 h-3 inline"></i> ${item.lokasi}</p></td>
+            <td class="p-4 font-semibold ${badgeColor}">${item.kondisi}</td>
+            <td class="p-4 text-center font-bold text-lg text-slate-700">${item.jumlah}</td>
+            <td class="p-4"><p>${item.perolehan}</p><p class="text-xs text-slate-400">${item.tahun}</p></td>
+            <td class="p-4 text-center">
+              <button onclick="editRuangan('${item.id}')" class="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      if(window.lucide) window.lucide.createIcons();
+    }
+    window.openRuanganModal = function() {
+      document.getElementById('ruang-id').value = ''; document.getElementById('ruang-nama').value = '';
+      document.getElementById('ruang-lokasi').value = ''; document.getElementById('ruang-jumlah').value = '1';
+      document.getElementById('ruang-kondisi').value = 'Baik'; document.getElementById('ruang-perolehan').value = '';
+      document.getElementById('ruang-tahun').value = new Date().getFullYear();
+      document.getElementById('modal-ruangan').classList.remove('hidden');
+    }
+    window.closeRuanganModal = function() { document.getElementById('modal-ruangan').classList.add('hidden'); }
+    window.editRuangan = function(id) {
+      const item = dataRuangan.find(i => i.id === id); if(!item) return;
+      document.getElementById('ruang-id').value = item.id; document.getElementById('ruang-nama').value = item.nama || '';
+      document.getElementById('ruang-lokasi').value = item.lokasi || ''; document.getElementById('ruang-jumlah').value = item.jumlah || 1;
+      document.getElementById('ruang-kondisi').value = item.kondisi || 'Baik'; document.getElementById('ruang-perolehan').value = item.perolehan || '';
+      document.getElementById('ruang-tahun').value = item.tahun || '';
+      document.getElementById('modal-ruangan').classList.remove('hidden');
+    }
+    window.saveRuangan = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('ruang-id').value || `RNG-${Date.now()}`;
+      const obj = {
+        nama: document.getElementById('ruang-nama').value, lokasi: document.getElementById('ruang-lokasi').value,
+        jumlah: Number(document.getElementById('ruang-jumlah').value), kondisi: document.getElementById('ruang-kondisi').value,
+        perolehan: document.getElementById('ruang-perolehan').value, tahun: document.getElementById('ruang-tahun').value
+      };
+      if(IS_PREVIEW) {
+        const idx = dataRuangan.findIndex(i => i.id === id); if(idx >= 0) Object.assign(dataRuangan[idx], obj); else dataRuangan.push({id, ...obj});
+        renderRuangan(); updateDash(); showToast("Data Ruangan disimpan", "success");
+      } else if(db) {
+        await setDoc(doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_barang_ruangan', id), obj);
+        showToast("Tersimpan di Cloud", "success");
+      }
+      closeRuanganModal();
+    }
+
+    // ------------------------------------------------------------------------
+    // PEMINJAMAN
+    // ------------------------------------------------------------------------
+    function renderPinjam() {
+      const tbody = document.getElementById('table-pinjam-body'); tbody.innerHTML = '';
+      if(dataPinjam.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada riwayat peminjaman.</td></tr>`; return; }
+      dataPinjam.forEach((item, index) => {
+        const badgeColor = item.status === 'Dipinjam' ? 'bg-pink-100 text-pink-700' : 'bg-emerald-100 text-emerald-700';
+        tbody.innerHTML += `
+          <tr class="hover:bg-white/50 transition">
+            <td class="p-4">${index + 1}</td>
+            <td class="p-4"><p class="font-bold text-indigo-950">${item.nama}</p><p class="text-[11px] text-slate-500">${item.keperluan}</p></td>
+            <td class="p-4 text-xs font-semibold text-slate-600">${item.tglMulai}<br><span class="text-slate-400 font-normal">s/d ${item.tglSelesai || '?'}</span></td>
+            <td class="p-4 font-semibold text-purple-700">${item.pj}<br><span class="text-[10px] font-normal italic text-slate-400">TTD: ${item.ttd || '-'}</span></td>
+            <td class="p-4 text-center"><span class="px-2 py-1 rounded text-[10px] font-bold ${badgeColor}">${item.status}</span></td>
+            <td class="p-4 text-center">
+              <button onclick="editPinjam('${item.id}')" class="p-1.5 text-pink-600 bg-pink-50 rounded-lg hover:bg-pink-100"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      if(window.lucide) window.lucide.createIcons();
+    }
+    window.openPinjamModal = function() {
+      document.getElementById('pinjam-id').value = ''; document.getElementById('pinjam-nama').value = '';
+      document.getElementById('pinjam-keperluan').value = ''; document.getElementById('pinjam-tgl-mulai').value = new Date().toISOString().split('T')[0];
+      document.getElementById('pinjam-tgl-selesai').value = ''; document.getElementById('pinjam-pj').value = '';
+      document.getElementById('pinjam-ttd').value = ''; document.getElementById('pinjam-status').value = 'Dipinjam';
+      document.getElementById('modal-pinjam').classList.remove('hidden');
+    }
+    window.closePinjamModal = function() { document.getElementById('modal-pinjam').classList.add('hidden'); }
+    window.editPinjam = function(id) {
+      const item = dataPinjam.find(i => i.id === id); if(!item) return;
+      document.getElementById('pinjam-id').value = item.id; document.getElementById('pinjam-nama').value = item.nama || '';
+      document.getElementById('pinjam-keperluan').value = item.keperluan || ''; document.getElementById('pinjam-tgl-mulai').value = item.tglMulai || '';
+      document.getElementById('pinjam-tgl-selesai').value = item.tglSelesai || ''; document.getElementById('pinjam-pj').value = item.pj || '';
+      document.getElementById('pinjam-ttd').value = item.ttd || ''; document.getElementById('pinjam-status').value = item.status || 'Dipinjam';
+      document.getElementById('modal-pinjam').classList.remove('hidden');
+    }
+    window.savePinjam = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('pinjam-id').value || `PNJ-${Date.now()}`;
+      const obj = {
+        nama: document.getElementById('pinjam-nama').value, keperluan: document.getElementById('pinjam-keperluan').value,
+        tglMulai: document.getElementById('pinjam-tgl-mulai').value, tglSelesai: document.getElementById('pinjam-tgl-selesai').value,
+        pj: document.getElementById('pinjam-pj').value, ttd: document.getElementById('pinjam-ttd').value, status: document.getElementById('pinjam-status').value
+      };
+      if(IS_PREVIEW) {
+        const idx = dataPinjam.findIndex(i => i.id === id); if(idx >= 0) Object.assign(dataPinjam[idx], obj); else dataPinjam.push({id, ...obj});
+        renderPinjam(); updateDash(); showToast("Log Peminjaman disimpan", "success");
+      } else if(db) {
+        await setDoc(doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_peminjaman', id), obj);
+        showToast("Tersimpan di Cloud", "success");
+      }
+      closePinjamModal();
+    }
+
+    // ------------------------------------------------------------------------
+    // PRINT LOGIC (Cetak Dokumen dengan Kostumisasi)
+    // ------------------------------------------------------------------------
+    window.openPrintModal = function(type) {
+      document.getElementById('print-type').value = type;
+      let title = "DAFTAR INVENTARIS BMN";
+      if(type === 'ruangan') title = "DAFTAR BARANG RUANGAN";
+      if(type === 'pinjam') title = "LOG PEMINJAMAN BARANG";
+      
+      document.getElementById('print-custom-title').value = title;
+      document.getElementById('print-custom-date').value = new Date().toISOString().split('T')[0];
+      
+      // Reset opsional form TTD agar bersih saat ganti laporan
+      if(document.getElementById('print-sign-name').value === '') document.getElementById('print-sign-role').value = "Mengetahui,\nKepala Tata Usaha";
+      
+      document.getElementById('modal-print').classList.remove('hidden');
+    }
+
+    window.closePrintModal = function() { document.getElementById('modal-print').classList.add('hidden'); }
+
+    window.executePrint = function(e) {
+      e.preventDefault();
+      const type = document.getElementById('print-type').value;
+      const customTitle = document.getElementById('print-custom-title').value;
+      const customDate = document.getElementById('print-custom-date').value;
+      const signRole = document.getElementById('print-sign-role').value;
+      const signName = document.getElementById('print-sign-name').value;
+      const signNip = document.getElementById('print-sign-nip').value;
+
+      // Format Date
+      const formattedDate = new Date(customDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Apply to Print Container
+      document.getElementById('print-title').innerText = customTitle.toUpperCase();
+      document.getElementById('print-date').innerText = formattedDate;
+      document.getElementById('print-ttd-role').innerHTML = signRole.replace(/\n/g, '<br>');
+      document.getElementById('print-ttd-name').innerText = signName ? signName : "...................................";
+      document.getElementById('print-ttd-nip').innerText = signNip ? `NIP. ${signNip}` : "NIP. ..........................";
+
+      // Build Table HTML
+      const container = document.getElementById('print-content');
+      let html = '<table class="print-table"><thead>';
+      
+      if(type === 'induk') {
+        html += `<tr><th>No</th><th>Kode Barang</th><th>N.U.P</th><th>Uraian / Merk Barang</th><th>Jumlah</th><th>Tahun</th><th>Asal Barang</th><th>Tgl. Perolehan</th><th>Keadaan</th><th>Lokasi</th></tr></thead><tbody>`;
+        dataInduk.forEach((d, i) => html += `<tr><td class="text-center">${i+1}</td><td>${d.kode}</td><td class="text-center">${d.nup}</td><td>${d.uraian}</td><td class="text-center">${d.jumlah}</td><td class="text-center">${d.tahun}</td><td>${d.asal}</td><td>${d.tgl}</td><td class="text-center">${d.keadaan}</td><td>${d.lokasi||'-'}</td></tr>`);
+      } else if (type === 'ruangan') {
+        html += `<tr><th>No</th><th>Lokasi Ruangan</th><th>Nama Barang</th><th>Kondisi</th><th>Jumlah</th><th>Tahun/Perolehan</th></tr></thead><tbody>`;
+        dataRuangan.forEach((d, i) => html += `<tr><td class="text-center">${i+1}</td><td>${d.lokasi}</td><td>${d.nama}</td><td class="text-center">${d.kondisi}</td><td class="text-center">${d.jumlah}</td><td>${d.tahun||'-'} (${d.perolehan||'-'})</td></tr>`);
+      } else if (type === 'pinjam') {
+        html += `<tr><th>No</th><th>Tgl Pinjam</th><th>Tgl Kembali</th><th>Nama Barang</th><th>Keperluan</th><th>Peminjam (PJ)</th><th>Status</th></tr></thead><tbody>`;
+        dataPinjam.forEach((d, i) => html += `<tr><td class="text-center">${i+1}</td><td>${d.tglMulai}</td><td>${d.tglSelesai||'-'}</td><td>${d.nama}</td><td>${d.keperluan}</td><td>${d.pj}</td><td class="text-center">${d.status}</td></tr>`);
+      }
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+      
+      closePrintModal();
+      
+      // Timeout to ensure UI render is complete before triggering OS Print dialog
+      setTimeout(() => window.print(), 300);
+    }
+
+    // ------------------------------------------------------------------------
+    // TOAST NOTIFICATIONS
+    // ------------------------------------------------------------------------
+    function showToast(msg, type = 'info') {
+      const box = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      const bg = type === 'success' ? 'bg-emerald-500' : type === 'error' ? 'bg-rose-600' : 'bg-blue-500';
+      el.className = `${bg} text-white px-5 py-3 rounded-xl shadow-lg flex items-center text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0`;
+      el.innerHTML = `<span>${msg}</span>`;
+      box.appendChild(el);
+      requestAnimationFrame(() => { el.classList.remove('translate-y-2', 'opacity-0'); });
+      setTimeout(() => {
+        el.classList.add('translate-y-2', 'opacity-0'); setTimeout(() => el.remove(), 300);
+      }, 3000);
+    }
+
+    // ------------------------------------------------------------------------
+    // IMPORT / EXPORT EXCEL (Menggunakan SheetJS)
+    // ------------------------------------------------------------------------
+    window.exportExcel = function(type) {
+      let data = [];
+      let filename = "";
+      
+      if (type === 'induk') {
+          data = dataInduk.map((d, i) => ({
+              "No": i + 1, "Kode Barang": d.kode || '', "N.U.P": d.nup || '', "Uraian Barang/ Merk Barang": d.uraian || '',
+              "Jumlah": d.jumlah || 1, "Tahun": d.tahun || '', "Asal Barang": d.asal || '',
+              "Tgl. Perolehan": d.tgl || '', "Keadaan Barang": d.keadaan || '', "Lokasi": d.lokasi || '', "Link BAST": d.bast || ''
+          }));
+          filename = "Data_Buku_Induk_BMN.xlsx";
+      } else if (type === 'ruangan') {
+          data = dataRuangan.map((d, i) => ({
+              "No": i + 1, "Lokasi Ruangan": d.lokasi || '', "Nama Barang": d.nama || '', "Jumlah": d.jumlah || 1,
+              "Kondisi": d.kondisi || '', "Perolehan": d.perolehan || '', "Tahun": d.tahun || ''
+          }));
+          filename = "Data_Barang_Ruangan.xlsx";
+      } else if (type === 'pinjam') {
+          data = dataPinjam.map((d, i) => ({
+              "No": i + 1, "Nama Barang": d.nama || '', "Keperluan": d.keperluan || '', "Tgl Pinjam": d.tglMulai || '',
+              "Tgl Kembali": d.tglSelesai || '', "Peminjam/PJ": d.pj || '', "Status": d.status || '', "Tanda Tangan": d.ttd || ''
+          }));
+          filename = "Data_Peminjaman_Barang.xlsx";
+      }
+
+      if(data.length === 0) { showToast("Tidak ada data untuk di-export!", "error"); return; }
+
+      // Proses konversi ke Excel
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      XLSX.writeFile(wb, filename);
+      showToast("Berhasil export ke Excel", "success");
+    };
+
+    window.processImport = async function(event, type) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      showToast("Memproses file Excel...", "info");
+      
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+          try {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, {type: 'array'});
+              const firstSheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[firstSheetName];
+              const json = XLSX.utils.sheet_to_json(worksheet);
+
+              if(json.length === 0) { showToast("File Excel kosong / format salah", "error"); return; }
+
+              let collectionName = '';
+              const promises = [];
+
+              for(let i = 0; i < json.length; i++) {
+                  let row = json[i];
+                  let obj = {};
+                  let id = '';
+
+                  // Pemetaan Data Berdasarkan Kolom Header di Excel
+                  if (type === 'induk') {
+                      id = `IDK-${Date.now()}-${i}`; collectionName = 'sim_buku_induk';
+                      obj = {
+                          kode: String(row["Kode Barang"] || ''), nup: String(row["N.U.P"] || row["NUP"] || ''), uraian: String(row["Uraian Barang/ Merk Barang"] || ''),
+                          jumlah: Number(row["Jumlah"]) || 1, tahun: String(row["Tahun"] || ''), asal: String(row["Asal Barang"] || ''), 
+                          tgl: String(row["Tgl. Perolehan"] || ''), keadaan: String(row["Keadaan Barang"] || 'Baik'), lokasi: String(row["Lokasi"] || ''), bast: String(row["Link BAST"] || '')
+                      };
+                  } else if (type === 'ruangan') {
+                      id = `RNG-${Date.now()}-${i}`; collectionName = 'sim_barang_ruangan';
+                      obj = {
+                          lokasi: String(row["Lokasi Ruangan"] || ''), nama: String(row["Nama Barang"] || ''),
+                          jumlah: Number(row["Jumlah"]) || 1, kondisi: String(row["Kondisi"] || 'Baik'),
+                          perolehan: String(row["Perolehan"] || ''), tahun: String(row["Tahun"] || new Date().getFullYear())
+                      };
+                  } else if (type === 'pinjam') {
+                      id = `PNJ-${Date.now()}-${i}`; collectionName = 'sim_peminjaman';
+                      obj = {
+                          nama: String(row["Nama Barang"] || ''), keperluan: String(row["Keperluan"] || ''),
+                          tglMulai: String(row["Tgl Pinjam"] || ''), tglSelesai: String(row["Tgl Kembali"] || ''),
+                          pj: String(row["Peminjam/PJ"] || ''), status: String(row["Status"] || 'Dipinjam'), ttd: String(row["Tanda Tangan"] || '')
+                      };
+                  }
+
+                  // Eksekusi Simpan Data
+                  if (IS_PREVIEW) {
+                      if(type === 'induk') dataInduk.push({id, ...obj});
+                      else if(type === 'ruangan') dataRuangan.push({id, ...obj});
+                      else if(type === 'pinjam') dataPinjam.push({id, ...obj});
+                  } else if (db) {
+                      promises.push(setDoc(doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', collectionName, id), obj));
+                  }
+              }
+
+              // Tunggu semua proses sinkronisasi database selesai (jika produksi)
+              if (!IS_PREVIEW && db && promises.length > 0) {
+                  await Promise.all(promises);
+              }
+
+              if (IS_PREVIEW) renderAll();
+              
+              showToast(`${json.length} baris data berhasil di-import`, "success");
+              event.target.value = ""; // Reset input file picker
+          } catch (error) {
+              console.error(error);
+              showToast("Gagal memproses file Excel, cek format header!", "error");
+          }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  </script>
+</body>
+</html>
