@@ -226,6 +226,9 @@
             <button onclick="exportExcel('induk')" class="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-blue-200" title="Export ke Excel">
               <i data-lucide="download" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Export</span>
             </button>
+            <button onclick="openDeleteAllIndukModal()" class="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-rose-200" title="Hapus Semua Data Master">
+              <i data-lucide="trash-2" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Kosongkan</span>
+            </button>
             <button onclick="openPrintModal('induk')" class="px-4 py-2.5 bg-white/70 hover:bg-white text-indigo-900 text-sm font-semibold rounded-full shadow-sm transition flex items-center border border-white">
               <i data-lucide="printer" class="w-4 h-4 md:mr-1.5"></i> <span class="hidden md:inline">Cetak</span>
             </button>
@@ -606,6 +609,23 @@
     </div>
   </div>
 
+  <!-- 5. MODAL KONFIRMASI HAPUS SEMUA DATA INDUK -->
+  <div id="modal-delete-all-induk" class="fixed inset-0 bg-indigo-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print transition-opacity">
+    <div class="glass-card rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center">
+      <div class="w-16 h-16 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4 text-rose-600 shadow-inner">
+        <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-xl font-display font-bold text-indigo-950 mb-2">Hapus Semua Data?</h3>
+      <p class="text-sm text-slate-500 mb-6 leading-relaxed">Tindakan ini akan menghapus <b class="text-rose-600">seluruh data Master Inventaris (Buku Induk)</b> secara permanen. Anda yakin ingin melanjutkan?</p>
+      <div class="flex space-x-3">
+        <button onclick="closeDeleteAllIndukModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">Batal</button>
+        <button id="btn-confirm-delete-all" onclick="executeDeleteAllInduk()" class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center">
+          <span>Ya, Hapus Semua</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- PRINT CONTAINER (Hidden in Browser, Visible in Print) -->
   <div id="print-container" class="hidden print-only p-2">
     <div class="text-center mb-6">
@@ -646,7 +666,7 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     let app, db, storage, auth;
@@ -896,6 +916,49 @@
         console.error(err); showToast("Gagal menyimpan data BMN", "error");
       } finally {
         btn.innerHTML = originalHtml; btn.disabled = false;
+      }
+    }
+
+    // FUNGSI HAPUS SEMUA DATA BUKU INDUK
+    window.openDeleteAllIndukModal = function() {
+      document.getElementById('modal-delete-all-induk').classList.remove('hidden');
+    }
+    
+    window.closeDeleteAllIndukModal = function() {
+      document.getElementById('modal-delete-all-induk').classList.add('hidden');
+    }
+    
+    window.executeDeleteAllInduk = async function() {
+      const btn = document.getElementById('btn-confirm-delete-all');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>`;
+      btn.disabled = true;
+
+      try {
+        if (IS_PREVIEW) {
+          dataInduk = []; // Kosongkan array di memori
+          renderInduk(); 
+          updateDash();
+          showToast("Seluruh data Buku Induk berhasil dikosongkan", "success");
+        } else if (db) {
+          // Ambil semua dokumen di koleksi sim_buku_induk lalu hapus satu per satu (Batch Deletion secara manual)
+          const querySnapshot = await getDocs(collection(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_buku_induk'));
+          const deletePromises = [];
+          
+          querySnapshot.forEach((document) => {
+            deletePromises.push(deleteDoc(doc(db, 'artifacts', APP_ID_PATH, 'public', 'data', 'sim_buku_induk', document.id)));
+          });
+          
+          await Promise.all(deletePromises); // Tunggu sampai semua proses hapus selesai
+          showToast("Seluruh data master di Cloud berhasil dihapus permanen", "success");
+        }
+      } catch(err) {
+        console.error(err);
+        showToast("Terjadi kesalahan saat menghapus data", "error");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        closeDeleteAllIndukModal();
       }
     }
 
